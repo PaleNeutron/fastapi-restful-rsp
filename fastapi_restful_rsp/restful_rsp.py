@@ -46,12 +46,8 @@ def restful_response(func: Callable[..., DataT]) -> Callable[..., RestFulRsp[Dat
                 return RestFulRsp[DataT](data=result)
             except HTTPException as e:
                 logger.exception(e)
-                ret_data = RestFulRsp[DataT](
-                    code=e.status_code, status="error", message=e.detail
-                )
-                return JSONResponse(
-                    content=ret_data.model_dump(), status_code=e.status_code
-                )
+                ret_data = RestFulRsp[DataT](code=e.status_code, status="error", message=e.detail)
+                return JSONResponse(content=ret_data.model_dump(), status_code=e.status_code)
             except Exception as e:
                 logger.exception(e)
                 ret_data = RestFulRsp[DataT](code=500, status="error", message=str(e))
@@ -66,12 +62,8 @@ def restful_response(func: Callable[..., DataT]) -> Callable[..., RestFulRsp[Dat
                 return RestFulRsp[DataT](data=result)
             except HTTPException as e:
                 logger.exception(e)
-                ret_data = RestFulRsp[DataT](
-                    code=e.status_code, status="error", message=e.detail
-                )
-                return JSONResponse(
-                    content=ret_data.model_dump(), status_code=e.status_code
-                )
+                ret_data = RestFulRsp[DataT](code=e.status_code, status="error", message=e.detail)
+                return JSONResponse(content=ret_data.model_dump(), status_code=e.status_code)
             except Exception as e:
                 logger.exception(e)
                 ret_data = RestFulRsp[DataT](code=500, status="error", message=str(e))
@@ -79,5 +71,12 @@ def restful_response(func: Callable[..., DataT]) -> Callable[..., RestFulRsp[Dat
 
     # change the return type of the function to  -> RestFulRsp[DataT]
     wrapper.__annotations__["return"] = RestFulRsp[wrapper.__annotations__["return"]]
+    if hasattr(func, "__signature__"):
+        # change return type of the function signature
+        # see https://docs.python.org/3/library/inspect.html#inspect.signature
+        # if has a __signature__ attribute, this function returns it without further computations
+        wrapper.__signature__ = func.__signature__.replace(
+            return_annotation=wrapper.__annotations__["return"]
+        )
 
     return wrapper
