@@ -1,6 +1,6 @@
 from functools import wraps
 import inspect
-from typing import Callable, Generic, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 from fastapi import HTTPException
 
@@ -70,7 +70,7 @@ def restful_response(func: Callable[..., DataT]) -> Callable[..., RestFulRsp[Dat
                 return JSONResponse(content=ret_data.model_dump(), status_code=500)
 
     # change the return type of the function to  -> RestFulRsp[DataT]
-    wrapper.__annotations__["return"] = RestFulRsp[wrapper.__annotations__["return"]]
+    wrapper.__annotations__["return"] = RestFulRsp[wrapper.__annotations__.get("return", Any)]
     if hasattr(func, "__signature__"):
         # change return type of the function signature
         # see https://docs.python.org/3/library/inspect.html#inspect.signature
