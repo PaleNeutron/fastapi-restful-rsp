@@ -47,7 +47,7 @@ def create_restful_rsp_decorator(
     """
     if param_dict is None:
         param_dict = {}
-    fields = {data_name: (Any, None), message_name: (str, "")}
+    fields = {data_name: (DataT, None), message_name: (str, "")}
     fields.update(param_dict)
 
     RestFulRsp = create_model("RestFulRsp", __base__=(RspGereric,), **fields)
