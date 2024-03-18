@@ -1,6 +1,6 @@
 from functools import wraps
 import inspect
-from typing import Any, Callable, Generic, Optional, TypeVar
+from typing import Any, Callable, Generic, Optional, TypeVar, get_type_hints
 
 from fastapi import HTTPException
 
@@ -48,6 +48,8 @@ def create_restful_rsp_decorator(
     if param_dict is None:
         param_dict = {}
     fields = {data_name: (DataT, None), message_name: (str, "")}
+    if code_name:
+        fields[code_name] = (get_type_hints(code_callback)["return"], 0)
     fields.update(param_dict)
 
     RestFulRsp = create_model("RestFulRsp", __base__=(RspGereric,), **fields)
@@ -77,12 +79,12 @@ def create_restful_rsp_decorator(
                     return RestFulRsp[DataT](**ret)
                 except HTTPException as e:
                     logger.exception(e)
-                    ret = {data_name: result, code_name: code_callback(e), message_name: str(e.detail)}
+                    ret = {code_name: code_callback(e), message_name: str(e.detail)}
                     ret_data = RestFulRsp[DataT](**ret)
                     return JSONResponse(content=ret_data.model_dump(), status_code=e.status_code)
                 except Exception as e:
                     logger.exception(e)
-                    ret = {data_name: result, code_name: code_callback(e), message_name: str(e)}
+                    ret = {code_name: code_callback(e), message_name: str(e)}
                     ret_data = RestFulRsp[DataT](**ret)
                     return JSONResponse(content=ret_data.model_dump(), status_code=500)
 
@@ -96,12 +98,12 @@ def create_restful_rsp_decorator(
                     return RestFulRsp[DataT](**ret)
                 except HTTPException as e:
                     logger.exception(e)
-                    ret = {data_name: result, code_name: code_callback(e), message_name: str(e.detail)}
+                    ret = {code_name: code_callback(e), message_name: str(e.detail)}
                     ret_data = RestFulRsp[DataT](**ret)
                     return JSONResponse(content=ret_data.model_dump(), status_code=e.status_code)
                 except Exception as e:
                     logger.exception(e)
-                    ret = {data_name: result, code_name: code_callback(e), message_name: str(e)}
+                    ret = {code_name: code_callback(e), message_name: str(e)}
                     ret_data = RestFulRsp[DataT](**ret)
                     return JSONResponse(content=ret_data.model_dump(), status_code=500)
 
