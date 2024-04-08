@@ -36,7 +36,7 @@ async def test_create_restful_rsp_decorator():
     @decorator
     async def test_aio_func(a: str, b: int) -> str:
         return a * b
-    
+
     result = await test_aio_func("ab", 3)
     assert result.data == "ababab"
     assert result.message == ""
@@ -46,17 +46,16 @@ async def test_create_restful_rsp_decorator():
 
 
 async def test_304_response():
-
     @restful_response
     def test_function(a: str, b: int) -> str:
         return Response(status_code=304)
-    
+
     result = test_function("ab", 3)
     assert result.status_code == 304
 
     @restful_response
     async def test_aio_func(a: str, b: int) -> str:
         return Response(status_code=304)
-    
+
     result = await test_aio_func("ab", 3)
     assert result.status_code == 304

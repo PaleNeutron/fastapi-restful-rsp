@@ -1,11 +1,11 @@
 from functools import wraps
 import inspect
-from typing import Any, Callable, Generic, Optional, TypeVar, get_type_hints
+from typing import Any, Callable, Optional, get_type_hints
 
 from fastapi import HTTPException, Response
 
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, create_model
+from pydantic import create_model
 
 from fastapi_restful_rsp.models import BaseRestFulRsp, DataT, RspGereric
 
@@ -59,7 +59,10 @@ def create_restful_rsp_decorator(
             return result
         if e:
             logger.exception(e)
-            ret = {code_name: code_callback(e), message_name: str(e.detail if isinstance(e, HTTPException) else e)}
+            ret = {
+                code_name: code_callback(e),
+                message_name: str(e.detail if isinstance(e, HTTPException) else e),
+            }
             ret_data = RestFulRsp[DataT](**ret)
             status_code = e.status_code if isinstance(e, HTTPException) else 500
             return JSONResponse(content=ret_data.model_dump(), status_code=status_code)
@@ -67,7 +70,9 @@ def create_restful_rsp_decorator(
             ret = {data_name: result, code_name: code_callback()}
             return RestFulRsp[DataT](**ret)
 
-    def restful_response(func: Callable[..., DataT]) -> Callable[..., BaseRestFulRsp[DataT]]:
+    def restful_response(
+        func: Callable[..., DataT],
+    ) -> Callable[..., BaseRestFulRsp[DataT]]:
         """
         Decorator function that wraps another function and converts its return value into a RestFulRsp object.
 
@@ -81,6 +86,7 @@ def create_restful_rsp_decorator(
             Exception: If an error occurs during the execution of the decorated function.
 
         """
+
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
             try:
@@ -103,12 +109,16 @@ def create_restful_rsp_decorator(
             wrapper = sync_wrapper
 
         # change the return type of the function to  -> RestFulRsp[DataT]
-        wrapper.__annotations__["return"] = RestFulRsp[wrapper.__annotations__.get("return", Any)]
+        wrapper.__annotations__["return"] = RestFulRsp[
+            wrapper.__annotations__.get("return", Any)
+        ]
         if hasattr(func, "__signature__"):
             # change return type of the function signature
             # see https://docs.python.org/3/library/inspect.html#inspect.signature
             # if has a __signature__ attribute, this function returns it without further computations
-            wrapper.__signature__ = func.__signature__.replace(return_annotation=wrapper.__annotations__["return"])
+            wrapper.__signature__ = func.__signature__.replace(
+                return_annotation=wrapper.__annotations__["return"]
+            )
 
         return wrapper
 
