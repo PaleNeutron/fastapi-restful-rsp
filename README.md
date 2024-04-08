@@ -33,3 +33,18 @@ app = FastAPI()
 def foo()-> str:
     return "Hello World"
 ```
+
+### Custom response structure
+
+You can customize the response structure by passing `data_name`, `code_key`, `message_name` to `restful_response` decorator.
+
+```python
+restful_response = create_restful_rsp_decorator(
+    data_name="data", code_name="my_code", message_name="message", param_dict={"status": (str, "success")}
+)
+
+@app.get("/foo/")
+@restful_response
+def foo()-> str:
+    return "Hello World"
+```
