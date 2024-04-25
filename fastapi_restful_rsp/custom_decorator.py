@@ -1,16 +1,13 @@
-from functools import wraps
 import inspect
+from functools import wraps
+from logging import getLogger
 from typing import Any, Callable, Optional, get_type_hints
 
 from fastapi import HTTPException, Response
-
 from fastapi.responses import JSONResponse
 from pydantic import create_model
 
 from fastapi_restful_rsp.models import BaseRestFulRsp, DataT, RspGereric
-
-from logging import getLogger
-
 
 logger = getLogger("fastapi.restful_rsp")
 
@@ -61,7 +58,7 @@ def create_restful_rsp_decorator(
             logger.exception(e)
             ret = {
                 code_name: code_callback(e),
-                message_name: str(e.detail if isinstance(e, HTTPException) else e),
+                message_name: str(e.detail if isinstance(e, HTTPException) else repr(e)),
             }
             ret_data = RestFulRsp[DataT](**ret)
             status_code = e.status_code if isinstance(e, HTTPException) else 500
