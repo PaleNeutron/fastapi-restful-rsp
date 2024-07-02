@@ -4,7 +4,6 @@ from logging import getLogger
 from typing import Any, Callable, Optional, get_type_hints
 
 from fastapi import HTTPException, Response
-from fastapi.responses import JSONResponse
 from pydantic import create_model
 
 from fastapi_restful_rsp.models import BaseRestFulRsp, DataT, RspGereric
@@ -51,21 +50,11 @@ def create_restful_rsp_decorator(
 
     RestFulRsp = create_model("RestFulRsp", __base__=(RspGereric,), **fields)
 
-    def handle_response(result, e=None):
+    def handle_response(result):
         if isinstance(result, Response):
             return result
-        if e:
-            logger.exception(e)
-            ret = {
-                code_name: code_callback(e),
-                message_name: str(e.detail if isinstance(e, HTTPException) else repr(e)),
-            }
-            ret_data = RestFulRsp[DataT](**ret)
-            status_code = e.status_code if isinstance(e, HTTPException) else 500
-            return JSONResponse(content=ret_data.model_dump(), status_code=status_code)
-        else:
-            ret = {data_name: result, code_name: code_callback()}
-            return RestFulRsp[DataT](**ret)
+        ret = {data_name: result, code_name: code_callback()}
+        return RestFulRsp[DataT](**ret)
 
     def restful_response(
         func: Callable[..., DataT],
@@ -86,19 +75,15 @@ def create_restful_rsp_decorator(
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
-            try:
-                result = await func(*args, **kwargs)
-                return handle_response(result)
-            except Exception as e:
-                return handle_response(None, e)
+            result = await func(*args, **kwargs)
+            return handle_response(result)
+
 
         @wraps(func)
         def sync_wrapper(*args, **kwargs):
-            try:
-                result = func(*args, **kwargs)
-                return handle_response(result)
-            except Exception as e:
-                return handle_response(None, e)
+            result = func(*args, **kwargs)
+            return handle_response(result)
+
 
         if inspect.iscoroutinefunction(func):
             wrapper = async_wrapper
