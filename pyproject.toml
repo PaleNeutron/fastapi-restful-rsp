@@ -22,7 +22,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry-dynamic-versioning]
 enable = true
-
+dirty = true
 
 [tool.black]
 line-length = 120

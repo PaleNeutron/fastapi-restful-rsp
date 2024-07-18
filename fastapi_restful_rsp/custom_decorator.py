@@ -7,6 +7,7 @@ from fastapi import HTTPException, Response
 from pydantic import create_model
 
 from fastapi_restful_rsp.models import BaseRestFulRsp, DataT, RspGereric
+from fastapi.dependencies.utils import get_typed_return_annotation
 
 logger = getLogger("fastapi.restful_rsp")
 
@@ -61,6 +62,7 @@ def create_restful_rsp_decorator(
     ) -> Callable[..., BaseRestFulRsp[DataT]]:
         """
         Decorator function that wraps another function and converts its return value into a RestFulRsp object.
+        If the return type is an instance of Response, it is returned as is.
 
         Args:
             func (Callable[..., DataT]): The function to be decorated.
@@ -72,6 +74,13 @@ def create_restful_rsp_decorator(
             Exception: If an error occurs during the execution of the decorated function.
 
         """
+
+        # check func return type
+        return_type = get_typed_return_annotation(func)
+        if return_type == inspect.Signature.empty:
+            pass
+        elif inspect.isclass(return_type) and  issubclass(return_type, Response):
+            return func
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
