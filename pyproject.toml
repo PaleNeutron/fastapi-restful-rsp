@@ -6,8 +6,8 @@ authors = ["paleneutron <paleneutron@outlook.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-fastapi = "^0.110.0"
+python = ">=3.10"
+fastapi = ">=0.110.0"
 
 
 [tool.poetry.group.dev.dependencies]
